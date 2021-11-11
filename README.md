@@ -1,1 +1,1 @@
-# PredictRentedAppartment
+# PredictRentedApartment
