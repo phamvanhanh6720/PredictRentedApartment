@@ -1,11 +1,10 @@
 import re
 from datetime import datetime
-
 import dataclasses
-from unidecode import unidecode
 
 import pymongo
-from itemadapter import ItemAdapter
+from unidecode import unidecode
+from scrapy import Spider
 from WebScrapy.items import RawNewsItem, NewsItem
 from WebScrapy.utils import process_upload_time
 
@@ -24,21 +23,25 @@ class WebscrapyPipeline:
             mongo_db=crawler.settings.get('MONGO_DATABASE')
         )
 
-    def open_spider(self, spider):
-        self.client = pymongo.MongoClient(self.mongo_uri)
-        self.db = self.client[self.mongo_db]
+    def open_spider(self, spider: Spider):
+        try:
+            self.client = pymongo.MongoClient(self.mongo_uri)
+            self.db = self.client[self.mongo_db]
+            spider.logger.info("Connect database successfully")
+        except:
+            spider.logger.info("Connect database unsuccessfully")
 
-    def close_spider(self, spider):
+    def close_spider(self, spider: Spider):
         self.client.close()
 
-    def process_item(self, item: RawNewsItem, spider) -> NewsItem:
+    def process_item(self, item: RawNewsItem, spider: Spider) -> NewsItem:
 
         title: str = item.raw_title
         area_m2: str = item.raw_square
         description: str = item.raw_description
 
-        num_list = list(map(int, re.findall(r'\d+', item.raw_price)))
-        price: int = num_list[0] if len(num_list) else None
+        num_list = [float(word.replace(',', '.')) for word in item.raw_price.split(' ') if word.isdigit() or ',' in word]
+        price: float = num_list[0] if len(num_list) else None
 
         location: str = item.raw_location.replace('xem bản đồ', '')
         phone_number: str = item.raw_phone_number.replace('nhấn để hiện số: ', '')
@@ -60,7 +63,8 @@ class WebscrapyPipeline:
             location=location,
             upload_person=upload_person,
             phone_number=phone_number,
-            news_type=news_type
+            news_type=news_type,
+            url=item.url
         )
 
         detail_info: dict = {}
@@ -79,7 +83,7 @@ class WebscrapyPipeline:
                 key = unidecode(info.strip())
                 key = key.replace(' ', '_')
                 detail_info[key] = True
-
+        spider.logger.info("Save crawled info of {} to database".format(news_item.url))
         self.db[self.collection_name].insert_one({**dataclasses.asdict(news_item), **detail_info})
 
         return news_item

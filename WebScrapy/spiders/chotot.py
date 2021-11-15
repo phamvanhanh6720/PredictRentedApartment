@@ -28,9 +28,10 @@ class ChototSpider(scrapy.Spider):
         news_url_list = response.css('li.AdItem_wrapperAdItem__1hEwM a::attr(href)').getall()
 
         if len(news_url_list):
-            for news_url in news_url_list[:1]:
+            for news_url in news_url_list:
                 news_url: str = news_url.replace('[object Object]', ChototSpider.object_name)
                 news_url = response.urljoin(news_url)
+
                 yield scrapy.Request(url=news_url, callback=self.parse_info)
 
     def parse_info(self, response):
@@ -50,7 +51,7 @@ class ChototSpider(scrapy.Spider):
         raw_upload_time = [normalize_text(_) for _ in raw_upload_time]
 
         self.driver.get(response.url)
-        self.driver.implicitly_wait(4)
+        self.driver.implicitly_wait(2)
 
         raw_location: str = None
         info_elements: str = None
@@ -61,13 +62,15 @@ class ChototSpider(scrapy.Spider):
             raw_location = self.driver.find_element_by_class_name("fz13").text
             raw_location = normalize_text(raw_location)
 
-            info_elements = self.driver.find_elements_by_class_name("AdParam_adParamItem__1o-dd")
+            info_elements = self.driver.find_elements_by_class_name("AdParam_adMediaParam__3bzmC")
             for ele in info_elements:
                 raw_info.append(normalize_text(ele.text))
 
             raw_phone_number = self.driver.find_elements_by_tag_name('linkcontact')[-1].text
             raw_phone_number = normalize_text(raw_phone_number)
 
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+            self.driver.implicitly_wait(1)
             raw_upload_person = self.driver.find_element_by_class_name("SimilarAds_similarAdsTitle__3MuV7").text
             raw_upload_person = normalize_text(raw_upload_person)
         except:
@@ -83,6 +86,7 @@ class ChototSpider(scrapy.Spider):
             raw_upload_time=raw_upload_time,
             raw_phone_number=raw_phone_number,
             raw_upload_person=raw_upload_person,
+            url=response.url
         )
 
         yield raw_news_item

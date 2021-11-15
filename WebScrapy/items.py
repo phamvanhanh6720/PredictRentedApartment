@@ -15,12 +15,13 @@ class RawNewsItem:
     raw_upload_person: Optional[str]
     raw_phone_number: Optional[str]
     raw_info: Optional[List[str]]
+    url: Optional[str]
 
 
 @dataclass
 class NewsItem:
     title: Optional[str]
-    price: Optional[int]
+    price: Optional[float]
     area_m2: Optional[str]
     description: Optional[str]
     upload_time: Optional[datetime]
@@ -29,4 +30,5 @@ class NewsItem:
     phone_number: Optional[str]
     # 'ca nhan' or 'moi gioi'
     news_type: Optional[str]
+    url: Optional[str]
 
