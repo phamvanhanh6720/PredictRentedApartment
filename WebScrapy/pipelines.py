@@ -12,28 +12,6 @@ from WebScrapy.utils import process_upload_time
 class WebscrapyPipeline:
     collection_name = 'raw_crawled_news'
 
-    def __init__(self, mongo_uri, mongo_db):
-        self.mongo_uri = mongo_uri
-        self.mongo_db = mongo_db
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        return cls(
-            mongo_uri=crawler.settings.get('MONGO_URI'),
-            mongo_db=crawler.settings.get('MONGO_DATABASE')
-        )
-
-    def open_spider(self, spider: Spider):
-        try:
-            self.client = pymongo.MongoClient(self.mongo_uri)
-            self.db = self.client[self.mongo_db]
-            spider.logger.info("Connect database successfully")
-        except:
-            spider.logger.info("Connect database unsuccessfully")
-
-    def close_spider(self, spider: Spider):
-        self.client.close()
-
     def process_item(self, item: RawNewsItem, spider: Spider) -> NewsItem:
 
         title: str = item.raw_title
@@ -84,7 +62,7 @@ class WebscrapyPipeline:
                 key = key.replace(' ', '_')
                 detail_info[key] = True
         spider.logger.info("Save crawled info of {} to database".format(news_item.url))
-        self.db[self.collection_name].insert_one({**dataclasses.asdict(news_item), **detail_info})
+        spider.db[self.collection_name].insert_one({**dataclasses.asdict(news_item), **detail_info})
 
         return news_item
 

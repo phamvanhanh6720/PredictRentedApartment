@@ -18,6 +18,8 @@ NEWSPIDER_MODULE = 'WebScrapy.spiders'
 MONGO_URI = "mongodb://root:aiLAMTHO123@127.0.0.1:27017"
 MONGO_DATABASE = "realestate"
 
+MAX_CACHED_REQUEST = 100
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'WebScrapy (+http://www.yourdomain.com)'
 
@@ -86,8 +88,9 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
-# HTTPCACHE_ENABLED = True
+HTTPCACHE_ENABLED = True
 # HTTPCACHE_EXPIRATION_SECS = 0
+HTTPCACHE_SHARDED = True
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
-# HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+HTTPCACHE_STORAGE = 'WebScrapy.extensions.MongoCacheStorage'

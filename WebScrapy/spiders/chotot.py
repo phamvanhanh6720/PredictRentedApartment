@@ -1,4 +1,5 @@
 import scrapy
+import pymongo
 from selenium import webdriver
 from scrapy.crawler import CrawlerProcess
 from typing import List
@@ -13,15 +14,29 @@ class ChototSpider(scrapy.Spider):
     allowed_domains = ['nha.chotot.com']
     start_urls = ['https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page=1']
     object_name = 'thue-can-ho-chung-cu'
+    max_cached_request = get_project_settings().get('MAX_CACHED_REQUEST')
 
     def __init__(self):
         options = webdriver.ChromeOptions()
         # options.add_argument("headless")
         desired_capabilities = options.to_capabilities()
         self.driver = webdriver.Chrome(desired_capabilities=desired_capabilities)
+        self.mongo_uri = get_project_settings().get('MONGO_URI'),
+        self.mongo_db = get_project_settings().get('MONGO_DATABASE')
+        self.num_cached_request = 0
+        self.current_page = 1
+
+        try:
+            self.connection = pymongo.MongoClient(self.mongo_uri)
+            self.db = self.connection[self.mongo_db]
+            self.logger.info("Connect database successfully")
+        except:
+            self.logger.info("Connect database unsuccessfully")
 
     def __del__(self):
         self.driver.close()
+        self.connection.close()
+        self.logger.info("Close connection to database")
 
     def parse(self, response):
 
@@ -33,6 +48,11 @@ class ChototSpider(scrapy.Spider):
                 news_url = response.urljoin(news_url)
 
                 yield scrapy.Request(url=news_url, callback=self.parse_info)
+
+            if self.num_cached_request <= self.max_cached_request:
+                self.current_page += 1
+                next_page = 'https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page={}'.format(self.current_page)
+                yield scrapy.Request(url=next_page, callback=self.parse)
 
     def parse_info(self, response):
         raw_title: str = response.css('h1.AdDecription_adTitle__2I0VE::text').getall()[-1]
@@ -51,7 +71,7 @@ class ChototSpider(scrapy.Spider):
         raw_upload_time = [normalize_text(_) for _ in raw_upload_time]
 
         self.driver.get(response.url)
-        self.driver.implicitly_wait(2)
+        self.driver.implicitly_wait(4)
 
         raw_location: str = None
         info_elements: str = None
@@ -70,7 +90,7 @@ class ChototSpider(scrapy.Spider):
             raw_phone_number = normalize_text(raw_phone_number)
 
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
-            self.driver.implicitly_wait(1)
+            self.driver.implicitly_wait(2)
             raw_upload_person = self.driver.find_element_by_class_name("SimilarAds_similarAdsTitle__3MuV7").text
             raw_upload_person = normalize_text(raw_upload_person)
         except:
@@ -93,7 +113,7 @@ class ChototSpider(scrapy.Spider):
 
 
 if __name__ == '__main__':
-
+    setting = get_project_settings()
     process = CrawlerProcess(get_project_settings())
     process.crawl(ChototSpider)
     process.start()
