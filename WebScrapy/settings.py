@@ -15,7 +15,7 @@ BOT_NAME = 'WebScrapy'
 SPIDER_MODULES = ['WebScrapy.spiders']
 NEWSPIDER_MODULE = 'WebScrapy.spiders'
 
-MONGO_URI = "mongodb://root:aiLAMTHO123@127.0.0.1:27017"
+MONGO_URI = ""
 MONGO_DATABASE = "realestate"
 
 MAX_CACHED_REQUEST = 100
