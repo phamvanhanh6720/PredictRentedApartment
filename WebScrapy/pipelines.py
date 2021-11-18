@@ -10,7 +10,7 @@ from WebScrapy.utils import process_upload_time
 
 
 class WebscrapyPipeline:
-    collection_name = 'raw_crawled_news'
+    collection_name = 'raw_chotot_news'
 
     def process_item(self, item: RawNewsItem, spider: Spider) -> NewsItem:
 
@@ -21,8 +21,10 @@ class WebscrapyPipeline:
         num_list = [float(word.replace(',', '.')) for word in item.raw_price.split(' ') if word.isdigit() or ',' in word]
         price: float = num_list[0] if len(num_list) else None
 
-        location: str = item.raw_location.replace('xem bản đồ', '')
-        phone_number: str = item.raw_phone_number.replace('nhấn để hiện số: ', '')
+        location: str = item.raw_location.replace('xem bản đồ', '') if item.raw_location is not None else None
+
+        raw_phone_number = item.raw_phone_number
+        phone_number: str = raw_phone_number.replace('nhấn để hiện số: ', '') if raw_phone_number is not None else None
 
         # news_type in set('ca_nhan', 'moi_gioi')
         news_type: str = item.raw_upload_time[1]
@@ -69,7 +71,15 @@ class WebscrapyPipeline:
 
 if __name__ == '__main__':
     mongo_db = 'realestate'
-    client = pymongo.MongoClient('mongodb://root:aiLAMTHO123@127.0.0.1:27017')
+    """
+    client = pymongo.MongoClient(host='127.0.0.1:27017',
+                                 username='webscrapy',
+                                 password='68f539388f66a374908f3df559eb4ea2',
+                                 authSource='realestate',
+                                 authMechanism='SCRAM-SHA-1')
+    """
+    client = pymongo.MongoClient()
+
     db = client[mongo_db]
 
     print(1)

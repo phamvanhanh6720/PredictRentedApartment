@@ -49,9 +49,10 @@ class MongoCacheStorage(object):
         # request is cached
         spider.num_cached_request += 1
         url = str(gf.url)
+        spider.logger.info("{} is cached".format(url))
         status = str(gf.status)
         header: dict = {key.encode('ascii'): list(map(lambda x: x.encode('ascii'), value))
-                  for key, value in gf.headers.items()}
+                        for key, value in gf.headers.items()}
         headers = Headers(header)
         body = gf.read()
         respcls = responsetypes.from_args(headers=headers, url=url)

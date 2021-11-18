@@ -8,6 +8,14 @@ from scrapy.utils.project import get_project_settings
 from WebScrapy.items import RawNewsItem
 from WebScrapy.utils import normalize_text
 
+import logging
+from selenium.webdriver.remote.remote_connection import LOGGER
+from urllib3.connectionpool import log
+
+
+log.setLevel(logging.WARNING)
+LOGGER.setLevel(logging.WARNING)
+
 
 class ChototSpider(scrapy.Spider):
     name = 'chotot'
@@ -18,20 +26,25 @@ class ChototSpider(scrapy.Spider):
 
     def __init__(self):
         options = webdriver.ChromeOptions()
-        # options.add_argument("headless")
+        options.add_argument("headless")
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
         desired_capabilities = options.to_capabilities()
         self.driver = webdriver.Chrome(desired_capabilities=desired_capabilities)
-        self.mongo_uri = get_project_settings().get('MONGO_URI'),
-        self.mongo_db = get_project_settings().get('MONGO_DATABASE')
+        self.mongo_db = get_project_settings()['MONGO_SETTINGS']
         self.num_cached_request = 0
         self.current_page = 1
 
         try:
-            self.connection = pymongo.MongoClient(self.mongo_uri)
-            self.db = self.connection[self.mongo_db]
+            self.connection = pymongo.MongoClient(host=self.mongo_db['HOSTNAME'],
+                                                  username=self.mongo_db['USERNAME'],
+                                                  password=self.mongo_db['PASSWORD'],
+                                                  authSource=self.mongo_db['DATABASE'],
+                                                  authMechanism='SCRAM-SHA-1')
+            self.db = self.connection[self.mongo_db['DATABASE']]
             self.logger.info("Connect database successfully")
         except:
             self.logger.info("Connect database unsuccessfully")
+            self.__del__()
 
     def __del__(self):
         self.driver.close()
@@ -41,18 +54,26 @@ class ChototSpider(scrapy.Spider):
     def parse(self, response):
 
         news_url_list = response.css('li.AdItem_wrapperAdItem__1hEwM a::attr(href)').getall()
+        new_requests = []
 
         if len(news_url_list):
             for news_url in news_url_list:
                 news_url: str = news_url.replace('[object Object]', ChototSpider.object_name)
                 news_url = response.urljoin(news_url)
 
-                yield scrapy.Request(url=news_url, callback=self.parse_info)
+                # yield scrapy.Request(url=news_url, callback=self.parse_info)
+                new_requests.append(scrapy.Request(url=news_url, callback=self.parse_info))
 
             if self.num_cached_request <= self.max_cached_request:
                 self.current_page += 1
+                self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
                 next_page = 'https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page={}'.format(self.current_page)
-                yield scrapy.Request(url=next_page, callback=self.parse)
+                # yield scrapy.Request(url=next_page, callback=self.parse)
+                new_requests.append(scrapy.Request(url=next_page, callback=self.parse))
+            else:
+                new_requests = []
+
+        return new_requests
 
     def parse_info(self, response):
         raw_title: str = response.css('h1.AdDecription_adTitle__2I0VE::text').getall()[-1]
