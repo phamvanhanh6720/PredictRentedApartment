@@ -23,7 +23,10 @@ MONGO_SETTINGS = {
     'DATABASE': 'realestate'
 }
 
-MAX_CACHED_REQUEST = 100
+CHROME_REMOTE_SERVER = 'http://127.0.0.1:4444/wd/hub'
+
+MAX_CACHED_REQUEST = 500
+CHOTOT_NUM_PAGES_PER_DAY = 25
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'WebScrapy (+http://www.yourdomain.com)'

@@ -22,7 +22,9 @@ class ChototSpider(scrapy.Spider):
     allowed_domains = ['nha.chotot.com']
     start_urls = ['https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page=1']
     object_name = 'thue-can-ho-chung-cu'
-    max_cached_request = get_project_settings().get('MAX_CACHED_REQUEST')
+    cfg = dict(get_project_settings())
+    max_cached_request = cfg['MAX_CACHED_REQUEST']
+    num_pages_per_day = cfg['CHOTOT_NUM_PAGES_PER_DAY']
 
     def __init__(self):
         options = webdriver.ChromeOptions()
@@ -30,7 +32,8 @@ class ChototSpider(scrapy.Spider):
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         desired_capabilities = options.to_capabilities()
         self.driver = webdriver.Chrome(desired_capabilities=desired_capabilities)
-        self.mongo_db = get_project_settings()['MONGO_SETTINGS']
+
+        self.mongo_db = self.cfg['MONGO_SETTINGS']
         self.num_cached_request = 0
         self.current_page = 1
 
@@ -48,8 +51,8 @@ class ChototSpider(scrapy.Spider):
 
     def __del__(self):
         self.driver.close()
-        self.connection.close()
         self.logger.info("Close connection to database")
+        self.connection.close()
 
     def parse(self, response):
 
@@ -64,7 +67,7 @@ class ChototSpider(scrapy.Spider):
                 # yield scrapy.Request(url=news_url, callback=self.parse_info)
                 new_requests.append(scrapy.Request(url=news_url, callback=self.parse_info))
 
-            if self.num_cached_request <= self.max_cached_request:
+            if self.num_cached_request <= self.max_cached_request and self.current_page <= self.num_pages_per_day:
                 self.current_page += 1
                 self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
                 next_page = 'https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page={}'.format(self.current_page)

@@ -64,7 +64,10 @@ class WebscrapyPipeline:
                 key = key.replace(' ', '_')
                 detail_info[key] = True
         spider.logger.info("Save crawled info of {} to database".format(news_item.url))
-        spider.db[self.collection_name].insert_one({**dataclasses.asdict(news_item), **detail_info})
+        try:
+            spider.db[self.collection_name].insert_one({**dataclasses.asdict(news_item), **detail_info})
+        except:
+            spider.logger.info("Item is already in the database")
 
         return news_item
 
