@@ -72,7 +72,7 @@ class ChototSpider(scrapy.Spider):
                 self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
                 next_page = 'https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page={}'.format(self.current_page)
                 # yield scrapy.Request(url=next_page, callback=self.parse)
-                new_requests.append(scrapy.Request(url=next_page, callback=self.parse))
+                new_requests.append(scrapy.Request(url=next_page, callback=self.parse, meta={'dont_cache': True}))
             else:
                 new_requests = []
 
