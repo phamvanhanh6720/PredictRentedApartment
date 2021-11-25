@@ -23,8 +23,12 @@ class ChototSpider(scrapy.Spider):
     start_urls = ['https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page=1']
     object_name = 'thue-can-ho-chung-cu'
     cfg = dict(get_project_settings())
-    max_cached_request = cfg['MAX_CACHED_REQUEST']
-    num_pages_per_day = cfg['CHOTOT_NUM_PAGES_PER_DAY']
+
+    custom_settings = {
+        'HTTPCACHE_EXPIRATION_SECS': 0,
+        'MAX_CACHED_REQUEST': 500,
+        'CHOTOT_NUM_PAGES_PER_DAY': 25
+    }
 
     def __init__(self):
         options = webdriver.ChromeOptions()
@@ -64,14 +68,14 @@ class ChototSpider(scrapy.Spider):
                 news_url: str = news_url.replace('[object Object]', ChototSpider.object_name)
                 news_url = response.urljoin(news_url)
 
-                # yield scrapy.Request(url=news_url, callback=self.parse_info)
                 new_requests.append(scrapy.Request(url=news_url, callback=self.parse_info))
 
-            if self.num_cached_request <= self.max_cached_request and self.current_page <= self.num_pages_per_day:
+            max_cached_request = self.settings.attributes['MAX_CACHED_REQUEST'].value
+            max_pages_per_day = self.settings.attributes['MAX_PAGES_PER_DAY'].value
+            if self.num_cached_request <= max_cached_request and self.current_page <= max_pages_per_day:
                 self.current_page += 1
                 self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
                 next_page = 'https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page={}'.format(self.current_page)
-                # yield scrapy.Request(url=next_page, callback=self.parse)
                 new_requests.append(scrapy.Request(url=next_page, callback=self.parse, meta={'dont_cache': True}))
             else:
                 new_requests = []

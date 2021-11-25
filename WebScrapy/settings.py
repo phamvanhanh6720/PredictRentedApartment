@@ -25,8 +25,8 @@ MONGO_SETTINGS = {
 
 CHROME_REMOTE_SERVER = 'http://127.0.0.1:4444/wd/hub'
 
-MAX_CACHED_REQUEST = 500
-CHOTOT_NUM_PAGES_PER_DAY = 25
+MAX_CACHED_REQUEST = 800
+CHOTOT_NUM_PAGES_PER_DAY = 40
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'WebScrapy (+http://www.yourdomain.com)'
