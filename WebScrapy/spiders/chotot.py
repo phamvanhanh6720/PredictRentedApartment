@@ -25,9 +25,9 @@ class ChototSpider(scrapy.Spider):
     cfg = dict(get_project_settings())
 
     custom_settings = {
-        'HTTPCACHE_EXPIRATION_SECS': 0,
-        'MAX_CACHED_REQUEST': 500,
-        'CHOTOT_NUM_PAGES_PER_DAY': 25
+        'HTTPCACHE_EXPIRATION_SECS': 86400,
+        'MAX_CACHED_REQUEST': 5000,
+        'MAX_PAGES_PER_DAY': 500
     }
 
     def __init__(self):

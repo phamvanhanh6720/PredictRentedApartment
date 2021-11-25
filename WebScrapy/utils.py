@@ -34,5 +34,7 @@ def process_upload_time(raw_upload_time: str) -> datetime:
             upload_time = upload_time - timedelta(weeks=previous_time)
         elif 'tháng' in raw_upload_time:
             upload_time = upload_time - timedelta(days=previous_time * 30)
+        elif 'năm' in raw_upload_time:
+            upload_time = upload_time - timedelta(days=previous_time * 365)
 
     return upload_time
