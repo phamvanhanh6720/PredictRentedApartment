@@ -15,18 +15,14 @@ BOT_NAME = 'WebScrapy'
 SPIDER_MODULES = ['WebScrapy.spiders']
 NEWSPIDER_MODULE = 'WebScrapy.spiders'
 
-
 MONGO_SETTINGS = {
-    'HOSTNAME': '127.0.0.1:27017',
+    'HOSTNAME': '42.115.7.62:8020',
     'USERNAME': 'webscrapy',
     'PASSWORD': '68f539388f66a374908f3df559eb4ea2',
     'DATABASE': 'realestate'
 }
 
-CHROME_REMOTE_SERVER = 'http://127.0.0.1:4444/wd/hub'
-
-MAX_CACHED_REQUEST = 500
-CHOTOT_NUM_PAGES_PER_DAY = 25
+MAX_CACHED_REQUEST = 100
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'WebScrapy (+http://www.yourdomain.com)'

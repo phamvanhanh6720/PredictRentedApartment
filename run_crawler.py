@@ -1,4 +1,4 @@
-from WebScrapy import ChototSpider
+from WebScrapy import ChototSpider, BatDongSanSpider
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
@@ -15,4 +15,6 @@ if __name__ == '__main__':
     setting = get_project_settings()
     process = CrawlerProcess(get_project_settings())
     process.crawl(ChototSpider)
+    process.crawl(BatDongSanSpider)
+
     process.start()

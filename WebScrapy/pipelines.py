@@ -10,7 +10,7 @@ from WebScrapy.utils import process_upload_time
 
 
 class WebscrapyPipeline:
-    collection_name = 'raw_chotot_news'
+    collection_name = 'raw_bds_news'
 
     def process_item(self, item: RawNewsItem, spider: Spider) -> NewsItem:
 
