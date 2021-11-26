@@ -5,7 +5,7 @@ from scrapy.crawler import CrawlerProcess
 from typing import List
 
 from scrapy.utils.project import get_project_settings
-from WebScrapy.items import RawNewsItem
+from WebScrapy.items import HomedyRawNewsItem
 from WebScrapy.utils import normalize_text
 
 import logging
@@ -92,7 +92,8 @@ class HomedySpider(scrapy.Spider):
                     'full_name': full_name_list[i],
                     'raw_price': raw_price_list[i],
                     'raw_area': raw_area_m2[i],
-                    'address_list': address_list[i]
+                    'address': address_list[i]
+
                 }
                 new_requests.append(scrapy.Request(url=news_url, callback=self.parse_info, cb_kwargs=data))
 
@@ -110,8 +111,48 @@ class HomedySpider(scrapy.Spider):
 
         return new_requests
 
-    def parse_info(self):
-        pass
+    def parse_info(self, response, **kwargs):
+
+        phone_number: str = kwargs['phone_number']
+        upload_person: str = kwargs['full_name']
+        location: str = kwargs['address']
+        raw_price: str = kwargs['raw_price']
+        raw_area: str = kwargs['raw_area']
+
+        url: str = response.url
+
+        title: str = response.css('div.product-detail-top-left h1::text').get()
+        upload_info: List[str] = response.css('div.product-info span::text').getall()
+
+        raw_upload_time = [element for element in upload_info if 'đăng' in normalize_text(element)]
+        raw_upload_time: str = raw_upload_time[0] if len(raw_upload_time) else None
+
+        raw_expire_time = [element for element in upload_info if '/' in normalize_text(element)]
+        expire_time: str = raw_expire_time[0] if len(raw_expire_time) else None
+
+        project: str = response.css('div.info a.name::text').get()
+        investor: str = response.css('div.info span.title-invertor::text').get()
+        status: str = response.css('div.info p span.text-title::text').get()
+
+        description: str = response.css('div.description.readmore p::text').get()
+        furniture: List[str] = response.css('div.utilities-detail.furniture div.item div.title::text').getall()
+
+        raw_news_item = HomedyRawNewsItem(title=title,
+                                          raw_price=raw_price,
+                                          raw_area=raw_area,
+                                          description=description,
+                                          raw_upload_time=raw_upload_time,
+                                          location=location,
+                                          upload_person=upload_person,
+                                          phone_number=phone_number,
+                                          expire_time=expire_time,
+                                          furniture=furniture,
+                                          project=project,
+                                          investor=investor,
+                                          status=status,
+                                          url=url)
+
+        return raw_news_item
 
 
 if __name__ == '__main__':

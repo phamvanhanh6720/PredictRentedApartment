@@ -5,7 +5,7 @@ from scrapy.crawler import CrawlerProcess
 from typing import List
 
 from scrapy.utils.project import get_project_settings
-from WebScrapy.items import RawNewsItem
+from WebScrapy.items import ChoTotRawNewsItem
 from WebScrapy.utils import normalize_text
 
 import logging
@@ -20,14 +20,17 @@ LOGGER.setLevel(logging.WARNING)
 class ChototSpider(scrapy.Spider):
     name = 'chotot'
     allowed_domains = ['nha.chotot.com']
-    start_urls = ['https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page=1']
+    start_urls = ['https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page=2']
     object_name = 'thue-can-ho-chung-cu'
     cfg = dict(get_project_settings())
 
     custom_settings = {
         'HTTPCACHE_EXPIRATION_SECS': 86400,
-        'MAX_CACHED_REQUEST': 5000,
-        'MAX_PAGES_PER_DAY': 500
+        'MAX_CACHED_REQUEST': 200,
+        'MAX_PAGES_PER_DAY': 2,
+        'ITEM_PIPELINES': {
+            'WebScrapy.pipelines.ChototPipeline': 300
+        }
     }
 
     def __init__(self):
@@ -39,7 +42,7 @@ class ChototSpider(scrapy.Spider):
 
         self.mongo_db = self.cfg['MONGO_SETTINGS']
         self.num_cached_request = 0
-        self.current_page = 1
+        self.current_page = 10
 
         try:
             self.connection = pymongo.MongoClient(host=self.mongo_db['HOSTNAME'],
@@ -72,8 +75,8 @@ class ChototSpider(scrapy.Spider):
 
             max_cached_request = self.settings.attributes['MAX_CACHED_REQUEST'].value
             max_pages_per_day = self.settings.attributes['MAX_PAGES_PER_DAY'].value
-            if self.num_cached_request <= max_cached_request and self.current_page <= max_pages_per_day:
-                self.current_page += 1
+            if self.num_cached_request <= max_cached_request and self.current_page >= 1:
+                self.current_page -= 1
                 self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
                 next_page = 'https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page={}'.format(self.current_page)
                 new_requests.append(scrapy.Request(url=next_page, callback=self.parse, meta={'dont_cache': True}))
@@ -124,7 +127,7 @@ class ChototSpider(scrapy.Spider):
         except:
             pass
 
-        raw_news_item = RawNewsItem(
+        raw_news_item = ChoTotRawNewsItem(
             raw_title=raw_title,
             raw_info=raw_info,
             raw_price=raw_price,
@@ -137,7 +140,7 @@ class ChototSpider(scrapy.Spider):
             url=response.url
         )
 
-        yield raw_news_item
+        return raw_news_item
 
 
 if __name__ == '__main__':
