@@ -64,6 +64,9 @@ class MongoCacheStorage(object):
         headers = {key.decode('ascii'): list(map(lambda x: x.decode('ascii'), value))
                    for key, value in dict(response.headers).items()}
 
+        if response.status != 200:
+            return
+
         metadata = {
             '_id': key,
             'time': time(),
@@ -72,8 +75,12 @@ class MongoCacheStorage(object):
             'headers': headers
         }
 
-        if 'page' in response.url or 'robots' in response.url:
-            return
+        if spider.name == 'chotot':
+            if 'page' in response.url or 'robots' in response.url:
+                return
+        elif spider.name == 'homedy':
+            if 'cho-thue-can-ho-ha-noi/p' in response.url or 'robots' in request.url:
+                return
 
         try:
             self.fs[spider].put(response.body, **metadata)

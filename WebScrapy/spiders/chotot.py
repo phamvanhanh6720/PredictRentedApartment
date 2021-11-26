@@ -20,14 +20,13 @@ LOGGER.setLevel(logging.WARNING)
 class ChototSpider(scrapy.Spider):
     name = 'chotot'
     allowed_domains = ['nha.chotot.com']
-    start_urls = ['https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page=2']
     object_name = 'thue-can-ho-chung-cu'
     cfg = dict(get_project_settings())
 
     custom_settings = {
-        'HTTPCACHE_EXPIRATION_SECS': 86400,
-        'MAX_CACHED_REQUEST': 200,
-        'MAX_PAGES_PER_DAY': 2,
+        'HTTPCACHE_EXPIRATION_SECS': 3600,
+        'MAX_CACHED_REQUEST': 500,
+        'MAX_PAGES_PER_DAY': 50,
         'ITEM_PIPELINES': {
             'WebScrapy.pipelines.ChototPipeline': 300
         }
@@ -42,7 +41,8 @@ class ChototSpider(scrapy.Spider):
 
         self.mongo_db = self.cfg['MONGO_SETTINGS']
         self.num_cached_request = 0
-        self.current_page = 10
+        self.current_page = 50
+        self.start_urls = ['https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page={}'.format(self.current_page)]
 
         try:
             self.connection = pymongo.MongoClient(host=self.mongo_db['HOSTNAME'],

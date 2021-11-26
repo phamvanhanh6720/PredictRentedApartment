@@ -20,11 +20,14 @@ LOGGER.setLevel(logging.WARNING)
 class HomedySpider(scrapy.Spider):
     name = 'homedy'
     allowed_domains = ['homedy.com']
-    start_urls = ['https://homedy.com/cho-thue-can-ho-ha-noi/p1']
 
     custom_settings = {
+        'HTTPCACHE_EXPIRATION_SECS': 86400,
         'MAX_CACHED_REQUEST': 500,
-        'MAX_PAGES_PER_DAY': 25,
+        'MAX_PAGES_PER_DAY': 500,
+        'ITEM_PIPELINES': {
+            'WebScrapy.pipelines.HomedyPipeline': 300
+        }
     }
     cfg = dict(get_project_settings())
 
@@ -40,6 +43,7 @@ class HomedySpider(scrapy.Spider):
         # self.mongo_db = self.settings.attributes['MONGO_SETTINGS'].value
         self.num_cached_request = 0
         self.current_page = 1
+        start_urls = ['https://homedy.com/cho-thue-can-ho-ha-noi/p{}'.format(self.current_page)]
 
         try:
             self.connection = pymongo.MongoClient(host=self.mongo_db['HOSTNAME'],
@@ -136,6 +140,7 @@ class HomedySpider(scrapy.Spider):
 
         description: str = response.css('div.description.readmore p::text').get()
         furniture: List[str] = response.css('div.utilities-detail.furniture div.item div.title::text').getall()
+        convenient: List[str] = response.css('div.utilities-detail.convenient div.item div.title::text').getall()
 
         raw_news_item = HomedyRawNewsItem(title=title,
                                           raw_price=raw_price,
@@ -149,6 +154,7 @@ class HomedySpider(scrapy.Spider):
                                           furniture=furniture,
                                           project=project,
                                           investor=investor,
+                                          convenient=convenient,
                                           status=status,
                                           url=url)
 
