@@ -22,7 +22,7 @@ class HomedySpider(scrapy.Spider):
     allowed_domains = ['homedy.com']
 
     custom_settings = {
-        'HTTPCACHE_EXPIRATION_SECS': 86400,
+        'HTTPCACHE_EXPIRATION_SECS': 43200,
         'MAX_CACHED_REQUEST': 500,
         'MAX_PAGES_PER_DAY': 500,
         'ITEM_PIPELINES': {
@@ -43,7 +43,7 @@ class HomedySpider(scrapy.Spider):
         # self.mongo_db = self.settings.attributes['MONGO_SETTINGS'].value
         self.num_cached_request = 0
         self.current_page = 1
-        start_urls = ['https://homedy.com/cho-thue-can-ho-ha-noi/p{}'.format(self.current_page)]
+        self.start_urls = ['https://homedy.com/cho-thue-can-ho-ha-noi/p{}'.format(self.current_page)]
 
         try:
             self.connection = pymongo.MongoClient(host=self.mongo_db['HOSTNAME'],
@@ -138,7 +138,8 @@ class HomedySpider(scrapy.Spider):
         investor: str = response.css('div.info span.title-invertor::text').get()
         status: str = response.css('div.info p span.text-title::text').get()
 
-        description: str = response.css('div.description.readmore p::text').get()
+        description_list: List[str] = response.css('div.description.readmore p::text').getall()
+        description = '\n'.join(description_list)
         furniture: List[str] = response.css('div.utilities-detail.furniture div.item div.title::text').getall()
         convenient: List[str] = response.css('div.utilities-detail.convenient div.item div.title::text').getall()
 
