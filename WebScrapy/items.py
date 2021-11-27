@@ -74,6 +74,43 @@ class HomedyRawNewsItem:
         self.investor = normalize_text(self.investor)
         self.status = normalize_text(self.status)
 
+@dataclass
+class AlonhadatRawNewsItem:
+    title: Optional[str]
+    raw_price: Optional[str]
+    raw_area: Optional[str]
+    description: Optional[str]
+
+    raw_upload_time: Optional[str]
+    location: Optional[str]
+    upload_person: Optional[str]
+    phone_number: Optional[str]
+
+    furniture: Optional[List[str]]
+    project: Optional[str]
+    number_floor: Optional[str]
+    number_bedroom: Optional[str]
+
+    status: Optional[str]
+    url: Optional[str]
+
+    def __post_init__(self):
+        self.title = normalize_text(self.title)
+        self.raw_price = normalize_text(self.raw_price)
+        self.raw_area = normalize_text(self.raw_area)
+        self.description = normalize_text(self.description)
+
+        self.raw_upload_time = normalize_text(self.raw_upload_time)
+        self.location = normalize_text(self.location)
+        self.upload_person = normalize_text(self.upload_person)
+        self.phone_number = normalize_text(self.phone_number)
+
+        self.furniture = [normalize_text(_) for _ in self.furniture]
+        self.project = normalize_text(self.project)
+        self.number_floor = normalize_text(self.number_floor)
+        self.number_bedroom = normalize_text(self.number_bedroom)
+
+        self.status = normalize_text(self.status)
 
 @dataclass
 class ChototNewsItem:
@@ -107,6 +144,27 @@ class HomedyNewsItem:
     convenient: Optional[List[str]]
     project: Optional[str]
     investor: Optional[str]
+    status: Optional[str]
+
+    url: Optional[str]
+
+@dataclass
+class AlonhadatNewsItem:
+    title: Optional[str]
+    price: Optional[float]
+    area_m2: Optional[str]
+    description: Optional[str]
+
+    upload_time: Optional[datetime]
+    location: Optional[str]
+    upload_person: Optional[str]
+    phone_number: Optional[str]
+
+    furniture: Optional[List[str]]
+    project: Optional[str]
+    number_floor: Optional[str]
+    number_bedroom: Optional[str]
+
     status: Optional[str]
 
     url: Optional[str]

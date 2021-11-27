@@ -6,13 +6,13 @@ from datetime import datetime
 import pymongo
 from unidecode import unidecode
 from scrapy import Spider
-from WebScrapy.items import ChoTotRawNewsItem, HomedyRawNewsItem
-from WebScrapy.items import ChototNewsItem, HomedyNewsItem
+from WebScrapy.items import ChoTotRawNewsItem, HomedyRawNewsItem, AlonhadatRawNewsItem
+from WebScrapy.items import ChototNewsItem, HomedyNewsItem, AlonhadatNewsItem
 from WebScrapy.utils import process_upload_time
 
 
 class ChototPipeline:
-    collection_name = 'raw_chotot_news'
+    collection_name = 'nam_test'
 
     def process_item(self, item: ChoTotRawNewsItem, spider: Spider) -> ChototNewsItem:
 
@@ -77,7 +77,7 @@ class ChototPipeline:
 
 
 class HomedyPipeline:
-    collection_name = 'raw_homedy_news'
+    collection_name = 'nam_test'
 
     def process_item(self, item: HomedyRawNewsItem, spider: Spider) -> HomedyNewsItem:
 
@@ -126,6 +126,70 @@ class HomedyPipeline:
         except:
             # spider.db[self.collection_name].replace_one({'url': news_item.url},
             #                                            dataclasses.asdict(news_item))
+            spider.logger.info("Item is updated in the database")
+
+        return news_item
+
+class AlonhadatPipeline:
+    collection_name = 'nam_test'
+
+    def process_item(self, item: AlonhadatRawNewsItem, spider: Spider) -> AlonhadatNewsItem:
+
+        title: str = item.raw_title
+        area_m2: str = item.raw_square
+        description: str = item.raw_description
+
+        num_list = [float(word.replace(',', '.')) for word in item.raw_price.split(' ') if word.isdigit() or ',' in word]
+        price: float = num_list[0] if len(num_list) else None
+
+        location: str = item.raw_location.replace('xem bản đồ', '') if item.raw_location is not None else None
+        raw_phone_number = item.raw_phone_number
+        phone_number: str = raw_phone_number.replace('nhấn để hiện số: ', '') if raw_phone_number is not None else None
+
+        # news_type in set('ca_nhan', 'moi_gioi')
+        news_type: str = item.raw_upload_time[1]
+        upload_time: datetime = process_upload_time(item.raw_upload_time[3])
+
+        upload_person: str = None
+        if item.raw_upload_person is not None and 'tin rao khác của' in item.raw_upload_person:
+            upload_person: str = item.raw_upload_person.replace('tin rao khác của', '').strip()
+
+        detail_info: dict = {}
+        # process detail information about apartment
+        for info in item.raw_info:
+            if ':' in info:
+                key = info.split(':')[0].strip()
+                # remove accent
+                key = unidecode(key)
+                key = key.replace(' ', '_')
+
+                value = info.split(':')[-1].strip()
+
+                detail_info[key] = value
+            else:
+                key = unidecode(info.strip())
+                key = key.replace(' ', '_')
+                detail_info[key] = True
+
+        news_item = AlonhadatNewsItem(
+            title=title,
+            price=price,
+            area_m2=area_m2,
+            description=description,
+            upload_time=upload_time,
+            location=location,
+            upload_person=upload_person,
+            phone_number=phone_number,
+            news_type=news_type,
+            url=item.url
+        )
+
+        spider.logger.info("Save crawled info of {} to database".format(news_item.url))
+        try:
+            spider.db[self.collection_name].insert_one({**dataclasses.asdict(news_item), **detail_info})
+        except:
+            spider.db[self.collection_name].replace_one({'url': news_item.url},
+                                                        {**dataclasses.asdict(news_item), **detail_info})
             spider.logger.info("Item is updated in the database")
 
         return news_item

@@ -15,18 +15,14 @@ BOT_NAME = 'WebScrapy'
 SPIDER_MODULES = ['WebScrapy.spiders']
 NEWSPIDER_MODULE = 'WebScrapy.spiders'
 
-
 MONGO_SETTINGS = {
-    'HOSTNAME': '127.0.0.1:27017',
+    'HOSTNAME': 'phamvanhanh.ddns.net:8020',
     'USERNAME': 'webscrapy',
     'PASSWORD': '68f539388f66a374908f3df559eb4ea2',
     'DATABASE': 'realestate'
 }
 
-CHROME_REMOTE_SERVER = 'http://127.0.0.1:4444/wd/hub'
-
-MAX_CACHED_REQUEST = 800
-CHOTOT_NUM_PAGES_PER_DAY = 40
+MAX_CACHED_REQUEST = 100
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'WebScrapy (+http://www.yourdomain.com)'
@@ -77,7 +73,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
+ITEM_PIPELINES = {
+    'WebScrapy.pipelines.WebscrapyPipeline': 300
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
