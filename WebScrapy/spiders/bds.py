@@ -24,14 +24,15 @@ LOGGER.setLevel(logging.WARNING)
 class BatDongSanSpider:
     name = 'batdongsan'
     allowed_domains = ['batdongsan.com.vn']
-    start_urls = 'https://batdongsan.com.vn/cho-thue-can-ho-chung-cu-ha-noi/p1'
+    # start_urls = 'https://batdongsan.com.vn/cho-thue-can-ho-chung-cu-ha-noi/p1'
     object_name = 'thue-can-ho-chung-cu'
     cfg = dict(get_project_settings())
     max_cached_request = cfg['MAX_CACHED_REQUEST']
     # num_pages_per_day = cfg['CHOTOT_NUM_PAGES_PER_DAY']
-    num_pages_per_day = 40
+    num_pages_per_day = 2
 
     def __init__(self):
+        self.start_urls = 'https://batdongsan.com.vn/cho-thue-can-ho-chung-cu-ha-noi/p1'
         options = webdriver.ChromeOptions()
         #options.add_argument("headless")
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
@@ -85,7 +86,7 @@ class BatDongSanSpider:
 
             if self.num_cached_request <= self.max_cached_request and self.current_page <= self.num_pages_per_day:
                 self.current_page += 1
-                self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
+                # self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
                 next_page = 'https://batdongsan.com.vn/cho-thue-can-ho-chung-cu-ha-noi/p{}'.format(self.current_page)
                 # yield scrapy.Request(url=next_page, callback=self.parse)
                 self.start_urls = next_page
@@ -94,6 +95,9 @@ class BatDongSanSpider:
                 new_requests = []
 
         # return new_requests
+        search_bar.clear()
+        search_bar.send_keys("getting started")
+        search_bar.send_keys(Keys.RETURN)
         return search_bar
 
     def parse_info(self, item):
