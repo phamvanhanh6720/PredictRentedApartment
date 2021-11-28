@@ -76,41 +76,34 @@ class HomedyRawNewsItem:
 
 @dataclass
 class AlonhadatRawNewsItem:
-    title: Optional[str]
+    raw_title: Optional[str]
     raw_price: Optional[str]
     raw_area: Optional[str]
-    description: Optional[str]
+    raw_description: Optional[str]
 
     raw_upload_time: Optional[str]
-    location: Optional[str]
-    upload_person: Optional[str]
-    phone_number: Optional[str]
+    raw_location: Optional[str]
+    raw_upload_person: Optional[str]
+    raw_phone_number: Optional[str]
 
-    furniture: Optional[List[str]]
-    project: Optional[str]
-    number_floor: Optional[str]
-    number_bedroom: Optional[str]
+    raw_project: Optional[str]
+    raw_infor: Optional[str]
 
-    status: Optional[str]
     url: Optional[str]
 
     def __post_init__(self):
-        self.title = normalize_text(self.title)
+        self.raw_title = normalize_text(self.raw_title)
         self.raw_price = normalize_text(self.raw_price)
         self.raw_area = normalize_text(self.raw_area)
-        self.description = normalize_text(self.description)
+        self.raw_description = normalize_text(self.raw_description)
 
-        self.raw_upload_time = normalize_text(self.raw_upload_time)
-        self.location = normalize_text(self.location)
-        self.upload_person = normalize_text(self.upload_person)
-        self.phone_number = normalize_text(self.phone_number)
+        self.raw_upload_time = [normalize_text(_) for _ in self.raw_upload_time]
+        self.raw_location = normalize_text(self.raw_location)
+        self.raw_upload_person = normalize_text(self.raw_upload_person)
+        self.raw_phone_number = normalize_text(self.raw_phone_number)
 
-        self.furniture = [normalize_text(_) for _ in self.furniture]
-        self.project = normalize_text(self.project)
-        self.number_floor = normalize_text(self.number_floor)
-        self.number_bedroom = normalize_text(self.number_bedroom)
-
-        self.status = normalize_text(self.status)
+        self.raw_project = normalize_text(self.raw_project)
+        self.raw_infor = [normalize_text(_) for _ in self.raw_infor]
 
 @dataclass
 class ChototNewsItem:
@@ -160,11 +153,6 @@ class AlonhadatNewsItem:
     upload_person: Optional[str]
     phone_number: Optional[str]
 
-    furniture: Optional[List[str]]
     project: Optional[str]
-    number_floor: Optional[str]
-    number_bedroom: Optional[str]
-
-    status: Optional[str]
 
     url: Optional[str]

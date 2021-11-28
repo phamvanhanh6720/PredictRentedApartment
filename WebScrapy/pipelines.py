@@ -136,40 +136,28 @@ class AlonhadatPipeline:
     def process_item(self, item: AlonhadatRawNewsItem, spider: Spider) -> AlonhadatNewsItem:
 
         title: str = item.raw_title
-        area_m2: str = item.raw_square
-        description: str = item.raw_description
-
         num_list = [float(word.replace(',', '.')) for word in item.raw_price.split(' ') if word.isdigit() or ',' in word]
         price: float = num_list[0] if len(num_list) else None
+        area_m2: str = item.raw_area[:-1].strip()
+        description: str = item.raw_description
 
-        location: str = item.raw_location.replace('xem bản đồ', '') if item.raw_location is not None else None
-        raw_phone_number = item.raw_phone_number
-        phone_number: str = raw_phone_number.replace('nhấn để hiện số: ', '') if raw_phone_number is not None else None
+        upload_time: datetime = process_upload_time(item.raw_upload_time[11:])
+        location: str = item.raw_location
+        upload_person: str = item.raw_upload_person
+        phone_number: str = item.raw_phone_number
 
-        # news_type in set('ca_nhan', 'moi_gioi')
-        news_type: str = item.raw_upload_time[1]
-        upload_time: datetime = process_upload_time(item.raw_upload_time[3])
-
-        upload_person: str = None
-        if item.raw_upload_person is not None and 'tin rao khác của' in item.raw_upload_person:
-            upload_person: str = item.raw_upload_person.replace('tin rao khác của', '').strip()
+        project: str = item.raw_project
 
         detail_info: dict = {}
-        # process detail information about apartment
-        for info in item.raw_info:
-            if ':' in info:
-                key = info.split(':')[0].strip()
-                # remove accent
-                key = unidecode(key)
-                key = key.replace(' ', '_')
-
-                value = info.split(':')[-1].strip()
-
-                detail_info[key] = value
+        list = []
+        for data in item.raw_infor:
+            list.append(data)
+        # process detail information about apartmentor]
+        for i in range(0, len(list) - 2, 2):
+            if 'img' in list[i+1]: detail_info[f'{list[i]}'] = True
             else:
-                key = unidecode(info.strip())
-                key = key.replace(' ', '_')
-                detail_info[key] = True
+                detail_info[f'{list[i]}'] = list[i + 1]
+
 
         news_item = AlonhadatNewsItem(
             title=title,
@@ -180,7 +168,7 @@ class AlonhadatPipeline:
             location=location,
             upload_person=upload_person,
             phone_number=phone_number,
-            news_type=news_type,
+            project=project,
             url=item.url
         )
 
