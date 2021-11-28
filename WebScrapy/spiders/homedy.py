@@ -33,14 +33,8 @@ class HomedySpider(scrapy.Spider):
 
     def __init__(self):
         super(HomedySpider, self).__init__()
-        options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        desired_capabilities = options.to_capabilities()
-        self.driver = webdriver.Chrome(desired_capabilities=desired_capabilities)
 
         self.mongo_db = self.cfg['MONGO_SETTINGS']
-        # self.mongo_db = self.settings.attributes['MONGO_SETTINGS'].value
         self.num_cached_request = 0
         self.current_page = 25
         self.start_urls = ['https://homedy.com/cho-thue-can-ho-ha-noi/p{}'.format(self.current_page)]
