@@ -1,6 +1,5 @@
 import scrapy
 import pymongo
-from selenium import webdriver
 from scrapy.crawler import CrawlerProcess
 from typing import List
 
@@ -52,7 +51,6 @@ class HomedySpider(scrapy.Spider):
             self.__del__()
 
     def __del__(self):
-        self.driver.close()
         self.logger.info("Close connection to database")
         self.connection.close()
 
@@ -114,7 +112,8 @@ class HomedySpider(scrapy.Spider):
 
         return new_requests
 
-    def parse_info(self, response, **kwargs):
+    @staticmethod
+    def parse_info(response, **kwargs):
 
         phone_number: str = kwargs['phone_number']
         upload_person: str = kwargs['full_name']
