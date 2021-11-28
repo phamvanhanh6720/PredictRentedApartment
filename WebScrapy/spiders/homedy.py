@@ -24,7 +24,7 @@ class HomedySpider(scrapy.Spider):
     custom_settings = {
         'HTTPCACHE_EXPIRATION_SECS': 43200,
         'MAX_CACHED_REQUEST': 500,
-        'MAX_PAGES_PER_DAY': 500,
+        'MAX_PAGES_PER_DAY': 25,
         'ITEM_PIPELINES': {
             'WebScrapy.pipelines.HomedyPipeline': 300
         }
@@ -42,7 +42,7 @@ class HomedySpider(scrapy.Spider):
         self.mongo_db = self.cfg['MONGO_SETTINGS']
         # self.mongo_db = self.settings.attributes['MONGO_SETTINGS'].value
         self.num_cached_request = 0
-        self.current_page = 1
+        self.current_page = 25
         self.start_urls = ['https://homedy.com/cho-thue-can-ho-ha-noi/p{}'.format(self.current_page)]
 
         try:
@@ -86,7 +86,12 @@ class HomedySpider(scrapy.Spider):
         raw_area_m2: List[str] = response.css('div.product-item-top span.acreage::text').getall()
         address_list: List[str] = response.css('div.product-item-top li.address::attr(title)').getall()
 
+        report: List[str] = response.css('div.report p::text').getall()
         new_requests = []
+
+        if len(report):
+            return new_requests
+
         if len(news_url_list):
             for i in range(len(news_url_list)):
                 news_url = news_url_list[i]
@@ -103,8 +108,8 @@ class HomedySpider(scrapy.Spider):
 
             max_cached_request = self.settings.attributes['MAX_CACHED_REQUEST'].value
             max_pages_per_day = self.settings.attributes['MAX_PAGES_PER_DAY'].value
-            if self.num_cached_request <= max_cached_request and self.current_page <= max_pages_per_day:
-                self.current_page += 1
+            if self.num_cached_request <= max_cached_request and self.current_page >= 1:
+                self.current_page -= 1
                 self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
 
                 next_page = 'https://homedy.com/cho-thue-can-ho-ha-noi/p{}'.format(self.current_page)
