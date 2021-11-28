@@ -1,7 +1,0 @@
-.idea
-test.ipynb
-**/__pycache__/
-WebScrapy/settings.py
-test.py
-WebScrapy/spiders/batdongsan.py
-WebScrapy/spiders/alonhadat.py
