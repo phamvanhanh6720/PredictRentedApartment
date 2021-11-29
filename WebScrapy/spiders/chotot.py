@@ -24,7 +24,7 @@ class ChototSpider(scrapy.Spider):
     cfg = dict(get_project_settings())
 
     custom_settings = {
-        'HTTPCACHE_EXPIRATION_SECS': 3600,
+        'HTTPCACHE_EXPIRATION_SECS': 43200,
         'MAX_CACHED_REQUEST': 500,
         'MAX_PAGES_PER_DAY': 50,
         'ITEM_PIPELINES': {
@@ -41,7 +41,7 @@ class ChototSpider(scrapy.Spider):
 
         self.mongo_db = self.cfg['MONGO_SETTINGS']
         self.num_cached_request = 0
-        self.current_page = 50
+        self.current_page = 25
         self.start_urls = ['https://nha.chotot.com/ha-noi/thue-can-ho-chung-cu?page={}'.format(self.current_page)]
 
         try:
