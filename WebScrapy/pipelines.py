@@ -6,8 +6,8 @@ from datetime import datetime
 import pymongo
 from unidecode import unidecode
 from scrapy import Spider
-from WebScrapy.items import ChoTotRawNewsItem, HomedyRawNewsItem
-from WebScrapy.items import ChototNewsItem, HomedyNewsItem
+from WebScrapy.items import ChoTotRawNewsItem, HomedyRawNewsItem, AlonhadatRawNewsItem
+from WebScrapy.items import ChototNewsItem, HomedyNewsItem, AlonhadatNewsItem
 from WebScrapy.utils import process_upload_time
 
 
@@ -126,6 +126,58 @@ class HomedyPipeline:
         except:
             spider.db[self.collection_name].replace_one({'url': news_item.url},
                                                         dataclasses.asdict(news_item))
+            spider.logger.info("Item is updated in the database")
+
+        return news_item
+
+class AlonhadatPipeline:
+    collection_name = 'nam_test'
+
+    def process_item(self, item: AlonhadatRawNewsItem, spider: Spider) -> AlonhadatNewsItem:
+
+        title: str = item.raw_title
+        num_list = [float(word.replace(',', '.')) for word in item.raw_price.split(' ') if word.isdigit() or ',' in word]
+        price: float = num_list[0] if len(num_list) else None
+        area_m2: str = item.raw_area[:-1].strip()
+        description: str = item.raw_description
+
+        upload_time: datetime = process_upload_time(item.raw_upload_time[11:])
+        location: str = item.raw_location
+        upload_person: str = item.raw_upload_person
+        phone_number: str = item.raw_phone_number
+
+        project: str = item.raw_project
+
+        detail_info: dict = {}
+        list = []
+        for data in item.raw_infor:
+            list.append(data)
+        # process detail information about apartmentor]
+        for i in range(0, len(list) - 2, 2):
+            if 'img' in list[i+1]: detail_info[f'{list[i]}'] = True
+            else:
+                detail_info[f'{list[i]}'] = list[i + 1]
+
+
+        news_item = AlonhadatNewsItem(
+            title=title,
+            price=price,
+            area_m2=area_m2,
+            description=description,
+            upload_time=upload_time,
+            location=location,
+            upload_person=upload_person,
+            phone_number=phone_number,
+            project=project,
+            url=item.url
+        )
+
+        spider.logger.info("Save crawled info of {} to database".format(news_item.url))
+        try:
+            spider.db[self.collection_name].insert_one({**dataclasses.asdict(news_item), **detail_info})
+        except:
+            spider.db[self.collection_name].replace_one({'url': news_item.url},
+                                                        {**dataclasses.asdict(news_item), **detail_info})
             spider.logger.info("Item is updated in the database")
 
         return news_item

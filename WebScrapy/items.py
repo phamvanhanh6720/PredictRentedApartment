@@ -74,6 +74,36 @@ class HomedyRawNewsItem:
         self.investor = normalize_text(self.investor)
         self.status = normalize_text(self.status)
 
+@dataclass
+class AlonhadatRawNewsItem:
+    raw_title: Optional[str]
+    raw_price: Optional[str]
+    raw_area: Optional[str]
+    raw_description: Optional[str]
+
+    raw_upload_time: Optional[str]
+    raw_location: Optional[str]
+    raw_upload_person: Optional[str]
+    raw_phone_number: Optional[str]
+
+    raw_project: Optional[str]
+    raw_infor: Optional[str]
+
+    url: Optional[str]
+
+    def __post_init__(self):
+        self.raw_title = normalize_text(self.raw_title)
+        self.raw_price = normalize_text(self.raw_price)
+        self.raw_area = normalize_text(self.raw_area)
+        self.raw_description = normalize_text(self.raw_description)
+
+        self.raw_upload_time = [normalize_text(_) for _ in self.raw_upload_time]
+        self.raw_location = normalize_text(self.raw_location)
+        self.raw_upload_person = normalize_text(self.raw_upload_person)
+        self.raw_phone_number = normalize_text(self.raw_phone_number)
+
+        self.raw_project = normalize_text(self.raw_project)
+        self.raw_infor = [normalize_text(_) for _ in self.raw_infor]
 
 @dataclass
 class AlonhadatRawNewsItem:
@@ -143,4 +173,16 @@ class HomedyNewsItem:
 
 @dataclass
 class AlonhadatNewsItem:
-    pass
+    title: Optional[str]
+    price: Optional[float]
+    area_m2: Optional[str]
+    description: Optional[str]
+
+    upload_time: Optional[datetime]
+    location: Optional[str]
+    upload_person: Optional[str]
+    phone_number: Optional[str]
+
+    project: Optional[str]
+
+    url: Optional[str]
