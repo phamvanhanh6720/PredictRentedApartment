@@ -20,7 +20,7 @@ def process_upload_time(raw_upload_time: str) -> datetime:
 
     upload_time: datetime = datetime.now()
 
-    if 'hôm qua' or 'hôm nay' in raw_upload_time:
+    if 'hôm qua' in raw_upload_time:
         upload_time = upload_time - timedelta(days=1)
     else:
         num_list = list(map(int, re.findall(r'\d+', raw_upload_time)))

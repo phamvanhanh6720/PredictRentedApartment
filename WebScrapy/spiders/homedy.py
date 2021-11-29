@@ -32,6 +32,7 @@ class HomedySpider(scrapy.Spider):
 
     def __init__(self):
         super(HomedySpider, self).__init__()
+
         self.mongo_db = self.cfg['MONGO_SETTINGS']
         self.num_cached_request = 0
         self.current_page = 25

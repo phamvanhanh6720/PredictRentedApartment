@@ -82,13 +82,12 @@ class AlonhadatRawNewsItem:
     raw_description: Optional[str]
 
     raw_upload_time: Optional[str]
-    raw_location: Optional[str]
-    raw_upload_person: Optional[str]
-    raw_phone_number: Optional[str]
+    location: Optional[str]
+    upload_person: Optional[str]
+    phone_number: Optional[str]
+    project: Optional[str]
 
-    raw_project: Optional[str]
-    raw_infor: Optional[str]
-
+    raw_info: Optional[List[str]]
     url: Optional[str]
 
     def __post_init__(self):
@@ -97,13 +96,45 @@ class AlonhadatRawNewsItem:
         self.raw_area = normalize_text(self.raw_area)
         self.raw_description = normalize_text(self.raw_description)
 
-        self.raw_upload_time = [normalize_text(_) for _ in self.raw_upload_time]
-        self.raw_location = normalize_text(self.raw_location)
-        self.raw_upload_person = normalize_text(self.raw_upload_person)
-        self.raw_phone_number = normalize_text(self.raw_phone_number)
+        self.raw_upload_time = normalize_text(self.raw_upload_time)
+        self.location = normalize_text(self.location)
+        self.upload_person = normalize_text(self.upload_person)
+        self.phone_number = normalize_text(self.phone_number)
 
-        self.raw_project = normalize_text(self.raw_project)
-        self.raw_infor = [normalize_text(_) for _ in self.raw_infor]
+        self.project = normalize_text(self.project)
+        self.raw_info = [normalize_text(_) for _ in self.raw_info]
+
+
+@dataclass
+class AlonhadatRawNewsItem:
+    title: Optional[str]
+    raw_price: Optional[str]
+    raw_area: Optional[str]
+    raw_description: Optional[str]
+
+    raw_upload_time: Optional[str]
+    location: Optional[str]
+    upload_person: Optional[str]
+    phone_number: Optional[str]
+
+    project: Optional[str]
+    raw_info: Optional[List[str]]
+    url: Optional[str]
+
+    def __post_init__(self):
+        self.title = normalize_text(self.title)
+        self.raw_price = normalize_text(self.raw_price)
+        self.raw_area = normalize_text(self.raw_area)
+        self.raw_description = normalize_text(self.raw_description)
+
+        self.raw_upload_time = normalize_text(self.raw_upload_time)
+        self.location = normalize_text(self.location)
+        self.upload_person = normalize_text(self.upload_person)
+        self.phone_number = normalize_text(self.phone_number)
+
+        self.project = normalize_text(self.project)
+        self.raw_info = [normalize_text(_) for _ in self.raw_info]
+
 
 @dataclass
 class BatDongSanRawNewsItem:
@@ -171,6 +202,7 @@ class HomedyNewsItem:
 
     url: Optional[str]
 
+
 @dataclass
 class AlonhadatNewsItem:
     title: Optional[str]
@@ -184,9 +216,9 @@ class AlonhadatNewsItem:
     phone_number: Optional[str]
 
     project: Optional[str]
-
     url: Optional[str]
 
+      
 @dataclass
 class BatDongSanNewsItem:
     title: Optional[str]

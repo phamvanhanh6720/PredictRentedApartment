@@ -16,7 +16,7 @@ SPIDER_MODULES = ['WebScrapy.spiders']
 NEWSPIDER_MODULE = 'WebScrapy.spiders'
 
 MONGO_SETTINGS = {
-    'HOSTNAME': 'phamvanhanh.ddns.net:8020',
+    'HOSTNAME': '127.0.0.1:27017',
     'USERNAME': 'webscrapy',
     'PASSWORD': '68f539388f66a374908f3df559eb4ea2',
     'DATABASE': 'realestate'
@@ -73,9 +73,6 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-    'WebScrapy.pipelines.WebscrapyPipeline': 300
-}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

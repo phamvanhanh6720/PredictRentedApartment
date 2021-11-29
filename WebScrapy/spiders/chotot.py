@@ -37,7 +37,7 @@ class ChototSpider(scrapy.Spider):
         options.add_argument("headless")
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         desired_capabilities = options.to_capabilities()
-        self.driver = webdriver.Chrome('C:/Users/hands/Downloads/chromedriver_win32/chromedriver.exe')
+        self.driver = webdriver.Chrome(desired_capabilities=desired_capabilities)
 
         self.mongo_db = self.cfg['MONGO_SETTINGS']
         self.num_cached_request = 0
