@@ -21,7 +21,7 @@ class AlonhadatSpider(scrapy.Spider):
     allowed_domains = ['alonhadat.com.vn']
     custom_settings = {
         'HTTPCACHE_EXPIRATION_SECS': 43200,
-        'MAX_CACHED_REQUEST': 500,
+        'MAX_CACHED_REQUEST': 2000,
         'MAX_PAGES_PER_DAY': 500,
         'ITEM_PIPELINES': {
             'WebScrapy.pipelines.AlonhadatPipeline': 300
@@ -33,7 +33,7 @@ class AlonhadatSpider(scrapy.Spider):
         super(AlonhadatSpider, self).__init__()
         self.mongo_db = self.cfg['MONGO_SETTINGS']
         self.num_cached_request = 0
-        self.current_page = 1
+        self.current_page = 100
 
         self.start_urls = ['https://alonhadat.com.vn/nha-dat/cho-thue/can-ho-chung-cu/1/ha-noi/trang--{}.html'.format(
             self.current_page)]
@@ -68,8 +68,8 @@ class AlonhadatSpider(scrapy.Spider):
 
             max_cached_request = self.settings.attributes['MAX_CACHED_REQUEST'].value
             max_pages_per_day = self.settings.attributes['MAX_PAGES_PER_DAY'].value
-            if self.num_cached_request <= max_cached_request and self.current_page <= max_pages_per_day:
-                self.current_page += 1
+            if self.num_cached_request <= max_cached_request and self.current_page >= 1:
+                self.current_page -= 1
                 self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
 
                 next_page = 'https://alonhadat.com.vn/nha-dat/cho-thue/can-ho-chung-cu/1/ha-noi/trang--{}.html'.format(
