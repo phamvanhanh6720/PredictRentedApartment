@@ -1,0 +1,6 @@
+.idea
+test.ipynb
+**/__pycache__/
+WebScrapy/settings.py
+
+venv

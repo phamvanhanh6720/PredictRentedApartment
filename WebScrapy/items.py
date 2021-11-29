@@ -106,6 +106,36 @@ class AlonhadatRawNewsItem:
         self.raw_infor = [normalize_text(_) for _ in self.raw_infor]
 
 @dataclass
+class BatDongSanRawNewsItem:
+    title: Optional[str]
+    raw_price: Optional[str]
+    raw_area: Optional[str]
+    raw_room_number: Optional[str]
+    description: Optional[str]
+    raw_duration_time: Optional[str]
+    raw_upload_time: Optional[str]
+    location: Optional[str]
+    upload_person: Optional[str]
+    phone_number: Optional[str]
+
+    url: Optional[str]
+
+    def __post_init__(self):
+        self.title = normalize_text(self.title)
+        self.raw_price = normalize_text(self.raw_price)
+        self.raw_area = normalize_text(self.raw_area)
+        self.raw_room_number = normalize_text(self.raw_room_number)
+        self.description = normalize_text(self.description)
+
+        self.raw_duration_time = normalize_text(self.raw_duration_time)
+        self.raw_upload_time = normalize_text(self.raw_upload_time)
+        self.location = normalize_text(self.location)
+        self.upload_person = normalize_text(self.upload_person)
+        self.phone_number = normalize_text(self.phone_number)
+
+
+
+@dataclass
 class ChototNewsItem:
     title: Optional[str]
     price: Optional[float]
@@ -154,5 +184,22 @@ class AlonhadatNewsItem:
     phone_number: Optional[str]
 
     project: Optional[str]
+
+    url: Optional[str]
+
+@dataclass
+class BatDongSanNewsItem:
+    title: Optional[str]
+    price: Optional[float]
+    area_m2: Optional[str]
+    room_number: Optional[str]
+    description: Optional[str]
+
+    raw_duration_time: Optional[datetime]
+    upload_time: Optional[datetime]
+    location: Optional[str]
+    upload_person: Optional[str]
+    phone_number: Optional[str]
+
 
     url: Optional[str]
