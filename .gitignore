@@ -1,7 +1,7 @@
 .idea
 test.ipynb
 **/__pycache__/
-WebScrapy/settings.py
 test.py
 WebScrapy/spiders/batdongsan.py
 venv
+WebScrapy/settings.py
