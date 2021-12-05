@@ -8,11 +8,11 @@
       <jdbc-url>mongodb://phamvanhanh.ddns.net:8020/realestate</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="nam@localhost" uuid="ec07cd27-71a5-4343-9cb9-39f6113d6f35">
+    <data-source source="LOCAL" name="crawl_baomoi@localhost" uuid="d8833a9e-20f4-4508-b1d9-185412e72105">
       <driver-ref>mongo</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.dbschema.MongoJdbcDriver</jdbc-driver>
-      <jdbc-url>mongodb://localhost:27017/nam</jdbc-url>
+      <jdbc-url>mongodb://localhost:27107/crawl_baomoi</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

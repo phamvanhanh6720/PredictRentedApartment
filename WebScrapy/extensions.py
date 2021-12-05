@@ -81,6 +81,9 @@ class MongoCacheStorage(object):
         elif spider.name == 'homedy':
             if 'cho-thue-can-ho-ha-noi/p' in response.url or 'robots' in request.url:
                 return
+        elif spider.name == 'alonhadat':
+            if '/nha-dat/cho-thue/can-ho-chung-cu/1/ha-noi/trang' in response.url or 'robots' in request.url:
+                return
 
         try:
             self.fs[spider].put(response.body, **metadata)

@@ -1,14 +1,16 @@
-import re
+import requests
 import dataclasses
 from typing import List
 from datetime import datetime
-
 import pymongo
+
+from bs4 import BeautifulSoup
 from unidecode import unidecode
 from scrapy import Spider
-from WebScrapy.items import ChoTotRawNewsItem, HomedyRawNewsItem, AlonhadatRawNewsItem
+from WebScrapy.items import ChoTotRawNewsItem, HomedyRawNewsItem, AlonhadatRawNewsItem, BatDongSanRawNewsItem, \
+    BatDongSanNewsItem
 from WebScrapy.items import ChototNewsItem, HomedyNewsItem, AlonhadatNewsItem
-from WebScrapy.utils import process_upload_time
+from WebScrapy.utils import process_upload_time, timedelta
 
 
 class ChototPipeline:
@@ -77,7 +79,7 @@ class ChototPipeline:
 
 
 class HomedyPipeline:
-    collection_name = 'nam_test'
+    collection_name = 'nam_test_1'
 
     def process_item(self, item: HomedyRawNewsItem, spider: Spider) -> HomedyNewsItem:
 
@@ -124,40 +126,97 @@ class HomedyPipeline:
         try:
             spider.db[self.collection_name].insert_one(dataclasses.asdict(news_item))
         except:
-            # spider.db[self.collection_name].replace_one({'url': news_item.url},
-            #                                            dataclasses.asdict(news_item))
+            spider.db[self.collection_name].replace_one({'url': news_item.url},
+                                                        dataclasses.asdict(news_item))
             spider.logger.info("Item is updated in the database")
 
         return news_item
+
 
 class AlonhadatPipeline:
     collection_name = 'nam_test'
 
     def process_item(self, item: AlonhadatRawNewsItem, spider: Spider) -> AlonhadatNewsItem:
 
-        title: str = item.raw_title
+        def extract_upload_time(raw_upload_time: str):
+            current_time: datetime = datetime.now()
+            result: datetime = datetime.now()
+
+            if 'hôm nay' in raw_upload_time:
+                result = current_time
+            elif 'hôm qua' in raw_upload_time:
+                result = current_time - timedelta(days=1)
+
+            try:
+                upload_date = raw_upload_time.replace('ngày đăng:', '').strip()
+                date: str = upload_date.split('/')[0]
+                month: str = upload_date.split('/')[1]
+                year: str = upload_date.split('/')[-1][-2:]
+                result = datetime.strptime('{}/{}/{} 00:00:00'.format(date, month, year), '%d/%m/%y %H:%M:%S')
+            except:
+                pass
+
+            return result
+
+        title: str = item.title
         num_list = [float(word.replace(',', '.')) for word in item.raw_price.split(' ') if word.isdigit() or ',' in word]
         price: float = num_list[0] if len(num_list) else None
         area_m2: str = item.raw_area[:-1].strip()
         description: str = item.raw_description
 
-        upload_time: datetime = process_upload_time(item.raw_upload_time[11:])
-        location: str = item.raw_location
-        upload_person: str = item.raw_upload_person
-        phone_number: str = item.raw_phone_number
+        upload_time: datetime = extract_upload_time(item.raw_upload_time)
+        location: str = item.location
+        upload_person: str = item.upload_person
+        phone_number: str = item.phone_number
 
-        project: str = item.raw_project
+        project: str = item.project
 
         detail_info: dict = {}
-        list = []
-        for data in item.raw_infor:
-            list.append(data)
-        # process detail information about apartmentor]
-        for i in range(0, len(list) - 2, 2):
-            if 'img' in list[i+1]: detail_info[f'{list[i]}'] = True
-            else:
-                detail_info[f'{list[i]}'] = list[i + 1]
+        raw_info = item.raw_info
 
+        # process detail information about apartment
+        fix_attrs = ['ma_tin', 'huong', 'phong_an', 'loai_tin', 'duong_truoc_nha', 'nha_bep',
+                     'loai_bds', 'phap_ly', 'san_thuong', 'chieu_ngang', 'so_lau', 'cho_de_xe_hoi',
+                     'chieu_dai', 'so_phong_ngu', 'chinh_chu']
+        i = 0
+        while True:
+            key = raw_info[min(i, len(raw_info) - 1)]
+            value = raw_info[min(i+1, len(raw_info) - 1)]
+            # remove accent
+            if i >= len(raw_info):
+                break
+
+            key = unidecode(key)
+            key = key.replace(' ', '_')
+            temp_value = unidecode(value).replace(' ', '_')
+            if key in fix_attrs and temp_value not in fix_attrs:
+                i += 2
+                if '_' in value or '-' in value:
+                    continue
+                detail_info[key] = value
+
+            elif key == temp_value:
+                break
+            else:
+                detail_info[key] = True
+                i += 1
+
+        id_post: str = detail_info['ma_tin'].strip()
+        url_request = 'https://alonhadat.com.vn/handler/Handler.ashx?command=35&propertyid={}&captcha='.format(id_post)
+        headers = {
+            "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36',
+            "Origin": 'https://alonhadat.com.vn',
+            "Referer": item.url
+        }
+
+        sub_response = requests.get(url=url_request, timeout=5, headers=headers)
+
+        if sub_response.status_code == 200:
+            phone_number_element: str = sub_response.text
+            soup = BeautifulSoup(phone_number_element, 'html.parser')
+            a_tag = soup.find('a')
+            if a_tag is not None:
+                phone_number = a_tag.string.replace('.', '')
 
         news_item = AlonhadatNewsItem(
             title=title,
@@ -176,12 +235,63 @@ class AlonhadatPipeline:
         try:
             spider.db[self.collection_name].insert_one({**dataclasses.asdict(news_item), **detail_info})
         except:
-            spider.db[self.collection_name].replace_one({'url': news_item.url},
-                                                        {**dataclasses.asdict(news_item), **detail_info})
+            # spider.db[self.collection_name].replace_one({'url': news_item.url},
+            #                                             {**dataclasses.asdict(news_item), **detail_info})
             spider.logger.info("Item is updated in the database")
 
         return news_item
 
+class BatDongSanPipeline:
+    collection_name = 'test_bat_dong_san'
+
+    def process_item(self, item: BatDongSanRawNewsItem, spider: Spider) -> BatDongSanNewsItem:
+
+        title: str = item.raw_title
+        num_list = [float(word.replace(',', '.')) for word in item.raw_price.split(' ') if word.isdigit() or ',' in word]
+        price: float = num_list[0] if len(num_list) else None
+        area_m2: str = item.raw_area[:-1].strip()
+        room_number: str = item.raw_room_number
+        description: str = item.raw_description
+
+        raw_duration_time: datetime = process_upload_time(item.raw_duration_time[11:])
+        upload_time: datetime = process_upload_time(item.raw_upload_time[11:])
+        location: str = item.raw_location
+        upload_person: str = item.raw_upload_person
+        phone_number: str = item.raw_phone_number
+
+        news_item = BatDongSanNewsItem(
+            title=title,
+            price=price,
+            area_m2=area_m2,
+            room_number=room_number,
+            description=description,
+            raw_duration_time=raw_duration_time,
+            upload_time=upload_time,
+            location=location,
+            upload_person=upload_person,
+            phone_number=phone_number,
+            url=item.url
+        )
+
+        spider.logger.info("Save crawled info of {} to database".format(news_item.url))
+        try:
+            spider.db[self.collection_name].insert_one({**dataclasses.asdict(news_item)})#, **detail_info})
+        except:
+            spider.db[self.collection_name].replace_one({'url': news_item.url},
+                                                        {**dataclasses.asdict(news_item)})#, **detail_info})
+            spider.logger.info("Item is updated in the database")
+
+        return news_item
+
+        # spider.logger.info("Save crawled info of {} to database".format(news_item.url))
+        # try:
+        #     spider.db[self.collection_name].insert_one(dataclasses.asdict(news_item))
+        # except:
+        #     spider.db[self.collection_name].replace_one({'url': news_item.url},
+        #                                                 dataclasses.asdict(news_item))
+        #     spider.logger.info("Item is updated in the database")
+        #
+        # return news_item
 
 if __name__ == '__main__':
     mongo_db = 'realestate'
@@ -195,5 +305,4 @@ if __name__ == '__main__':
     client = pymongo.MongoClient()
 
     db = client[mongo_db]
-
     print(1)

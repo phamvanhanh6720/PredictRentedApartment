@@ -1,6 +1,5 @@
 import scrapy
 import pymongo
-from selenium import webdriver
 from scrapy.crawler import CrawlerProcess
 from typing import List
 
@@ -22,9 +21,9 @@ class HomedySpider(scrapy.Spider):
     allowed_domains = ['homedy.com']
 
     custom_settings = {
-        'HTTPCACHE_EXPIRATION_SECS': 86400,
+        'HTTPCACHE_EXPIRATION_SECS': 43200,
         'MAX_CACHED_REQUEST': 500,
-        'MAX_PAGES_PER_DAY': 500,
+        'MAX_PAGES_PER_DAY': 25,
         'ITEM_PIPELINES': {
             'WebScrapy.pipelines.HomedyPipeline': 300
         }
@@ -33,17 +32,11 @@ class HomedySpider(scrapy.Spider):
 
     def __init__(self):
         super(HomedySpider, self).__init__()
-        options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        desired_capabilities = options.to_capabilities()
-        self.driver = webdriver.Chrome('C:/Users/hands/Downloads/chromedriver_win32/chromedriver.exe')
 
         self.mongo_db = self.cfg['MONGO_SETTINGS']
-        # self.mongo_db = self.settings.attributes['MONGO_SETTINGS'].value
         self.num_cached_request = 0
-        self.current_page = 1
-        start_urls = ['https://homedy.com/cho-thue-can-ho-ha-noi/p{}'.format(self.current_page)]
+        self.current_page = 25
+        self.start_urls = ['https://homedy.com/cho-thue-can-ho-ha-noi/p{}'.format(self.current_page)]
 
         try:
             self.connection = pymongo.MongoClient(host=self.mongo_db['HOSTNAME'],
@@ -58,7 +51,6 @@ class HomedySpider(scrapy.Spider):
             self.__del__()
 
     def __del__(self):
-        self.driver.close()
         self.logger.info("Close connection to database")
         self.connection.close()
 
@@ -86,7 +78,12 @@ class HomedySpider(scrapy.Spider):
         raw_area_m2: List[str] = response.css('div.product-item-top span.acreage::text').getall()
         address_list: List[str] = response.css('div.product-item-top li.address::attr(title)').getall()
 
+        report: List[str] = response.css('div.report p::text').getall()
         new_requests = []
+
+        if len(report):
+            return new_requests
+
         if len(news_url_list):
             for i in range(len(news_url_list)):
                 news_url = news_url_list[i]
@@ -103,8 +100,8 @@ class HomedySpider(scrapy.Spider):
 
             max_cached_request = self.settings.attributes['MAX_CACHED_REQUEST'].value
             max_pages_per_day = self.settings.attributes['MAX_PAGES_PER_DAY'].value
-            if self.num_cached_request <= max_cached_request and self.current_page <= max_pages_per_day:
-                self.current_page += 1
+            if self.num_cached_request <= max_cached_request and self.current_page >= 1:
+                self.current_page -= 1
                 self.logger.info("Spider {} ,current page: {}".format(self.name, self.current_page))
 
                 next_page = 'https://homedy.com/cho-thue-can-ho-ha-noi/p{}'.format(self.current_page)
@@ -115,7 +112,8 @@ class HomedySpider(scrapy.Spider):
 
         return new_requests
 
-    def parse_info(self, response, **kwargs):
+    @staticmethod
+    def parse_info(response, **kwargs):
 
         phone_number: str = kwargs['phone_number']
         upload_person: str = kwargs['full_name']
@@ -138,7 +136,8 @@ class HomedySpider(scrapy.Spider):
         investor: str = response.css('div.info span.title-invertor::text').get()
         status: str = response.css('div.info p span.text-title::text').get()
 
-        description: str = response.css('div.description.readmore p::text').get()
+        description_list: List[str] = response.css('div.description.readmore p::text').getall()
+        description = '\n'.join(description_list)
         furniture: List[str] = response.css('div.utilities-detail.furniture div.item div.title::text').getall()
         convenient: List[str] = response.css('div.utilities-detail.convenient div.item div.title::text').getall()
 

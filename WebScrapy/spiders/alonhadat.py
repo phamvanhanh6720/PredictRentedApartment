@@ -130,7 +130,7 @@ class AlonhadatSpider(scrapy.Spider):
             raw_upload_person=raw_upload_person,
             raw_phone_number=raw_phone_number,
             raw_project=raw_project,
-            raw_infor=raw_infor,
+            raw_info=raw_infor,
             url=response.url
         )
 
