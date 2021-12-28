@@ -234,8 +234,8 @@ class AlonhadatPipeline:
         try:
             spider.db[self.collection_name].insert_one({**dataclasses.asdict(news_item), **detail_info})
         except:
-            # spider.db[self.collection_name].replace_one({'url': news_item.url},
-            #                                             {**dataclasses.asdict(news_item), **detail_info})
+            spider.db[self.collection_name].replace_one({'url': news_item.url},
+                                                         {**dataclasses.asdict(news_item), **detail_info})
             spider.logger.info("Item is updated in the database")
 
         return news_item

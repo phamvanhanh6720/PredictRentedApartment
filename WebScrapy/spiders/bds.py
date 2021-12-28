@@ -5,7 +5,7 @@ from scrapy.crawler import CrawlerProcess
 from typing import List
 
 from scrapy.utils.project import get_project_settings
-
+from scrapy import Request
 
 from WebScrapy.items import BatDongSanRawNewsItem
 from WebScrapy.utils import normalize_text
@@ -32,12 +32,11 @@ class BatDongSanSpider(scrapy.Spider):
     num_pages_per_day = 2
 
     def __init__(self):
-        self.start_urls = 'https://batdongsan.com.vn/cho-thue-can-ho-chung-cu-ha-noi/p1'
+        self.start_urls = ['https://batdongsan.com.vn/cho-thue-can-ho-chung-cu-ha-noi/p1']
         options = webdriver.ChromeOptions()
-        #options.add_argument("headless")
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         desired_capabilities = options.to_capabilities()
-        self.driver = webdriver.Chrome('C:/Users/Admin/Downloads/chromedriver', desired_capabilities=desired_capabilities)
+        self.driver = webdriver.Chrome(desired_capabilities=desired_capabilities)
 
         self.mongo_db = self.cfg['MONGO_SETTINGS']
         self.num_cached_request = 0
@@ -60,9 +59,12 @@ class BatDongSanSpider(scrapy.Spider):
         self.logger.info("Close connection to database")
         self.connection.close()
 
+    def start_requests(self):
+        headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:48.0) Gecko/20100101 Firefox/48.0'}
+        return [Request('https://batdongsan.com.vn/cho-thue-can-ho-chung-cu-ha-noi/p1',
+                        callback=self.parse, headers=headers)]
 
-
-    def parse(self):
+    def parse(self, response):
 
         self.driver.get(self.start_urls)
         search_bar = self.driver.find_elements_by_css_selector('a.js__product-link-for-product-id')
@@ -75,8 +77,6 @@ class BatDongSanSpider(scrapy.Spider):
         for i in range(size_page):
             news_url_list.append(search_bar[i].get_attribute('href'))
         news_url_list
-
-
 
         if len(news_url_list):
             for news_url in news_url_list:
@@ -158,10 +158,10 @@ class BatDongSanSpider(scrapy.Spider):
 
 
 if __name__ == '__main__':
-    # setting = get_project_settings()
-    # process = CrawlerProcess(get_project_settings())
-    # process.crawl(BatDongSanSpider)
-    # process.start()
-    test = BatDongSanSpider()
-    test.parse()
-    print("test")
+    setting = get_project_settings()
+    process = CrawlerProcess(get_project_settings())
+    process.crawl(BatDongSanSpider)
+    process.start()
+    # test = BatDongSanSpider()
+    # test.parse()
+    # print("test")

@@ -1,6 +1,5 @@
 from typing import Optional, List
 from datetime import datetime
-
 from dataclasses import dataclass
 
 from WebScrapy.utils import normalize_text
@@ -73,6 +72,7 @@ class HomedyRawNewsItem:
         self.project = normalize_text(self.project)
         self.investor = normalize_text(self.investor)
         self.status = normalize_text(self.status)
+
 
 @dataclass
 class AlonhadatRawNewsItem:
@@ -165,7 +165,6 @@ class BatDongSanRawNewsItem:
         self.phone_number = normalize_text(self.phone_number)
 
 
-
 @dataclass
 class ChototNewsItem:
     title: Optional[str]
@@ -232,6 +231,4 @@ class BatDongSanNewsItem:
     location: Optional[str]
     upload_person: Optional[str]
     phone_number: Optional[str]
-
-
     url: Optional[str]

@@ -5,3 +5,5 @@ test.py
 WebScrapy/spiders/batdongsan.py
 venv
 WebScrapy/settings.py
+ner/checkpoint-2750
+raw_data/dataset_ner.json
