@@ -25,20 +25,20 @@ def extract_entities(ner_model, tokenizer, cleaned_text: str) -> List[List[str]]
             begin_tags[i] = 1
 
     idxs = list(np.where(np.array(begin_tags)==1)[0])
-
     results = []
-    for i in range(len(idxs) - 1):
-        first_idx = idxs[i]
-        last_idx = idxs[i+1]
 
-        text = ' '.join([entity[0] for entity in entities[first_idx: last_idx]])
-        text = text.replace('@@ ', '')
-        text = text.replace('@@', '')
+    try:
+        if len(idxs) > 1:
+            for i in range(len(idxs) - 1):
+                first_idx = idxs[i]
+                last_idx = idxs[i+1]
 
-        results.append([text, entities[first_idx][1].replace('B-', '')])
-
-    if last_idx == len(entities) - 1:
-        return results
+                text = ' '.join([entity[0] for entity in entities[first_idx: last_idx]])
+                text = text.replace('@@ ', '')
+                text = text.replace('@@', '')
+                results.append([text, entities[first_idx][1].replace('B-', '')])
+    except Exception as e:
+        print(e)
 
     last_b_idx = idxs[-1]
     last_i_idx = last_b_idx
@@ -46,9 +46,12 @@ def extract_entities(ner_model, tokenizer, cleaned_text: str) -> List[List[str]]
         if 'O' != entity[1]:
             last_i_idx += 1
 
-    text = ' '.join([entity[0] for entity in entities[last_b_idx: last_i_idx]])
-    text = text.replace('@@ ', '')
-    text = text.replace('@@', '')
-    results.append([text, entities[last_b_idx][1].replace('B-', '')])
+    if last_i_idx != last_b_idx:
+        text = ' '.join([entity[0] for entity in entities[last_b_idx: last_i_idx]])
+        text = text.replace('@@ ', '')
+        text = text.replace('@@', '')
+        results.append([text, entities[last_b_idx][1].replace('B-', '')])
+    else:
+        results.append([entities[last_b_idx][0], entities[last_b_idx][1].replace('B-', '')])
 
     return results
