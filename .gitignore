@@ -8,3 +8,4 @@ WebScrapy/settings.py
 ner/checkpoint-2750
 raw_data/dataset_ner.json
 table_data
+raw_data
