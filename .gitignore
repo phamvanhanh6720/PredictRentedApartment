@@ -15,3 +15,4 @@ table_data/filled_bds.csv
 table_data/filled_chotot.csv
 table_data/integrated_data2.csv
 raw_data
+demo/cfg.yml
